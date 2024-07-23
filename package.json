@@ -46,6 +46,7 @@
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.1.5",
     "html-to-image": "^1.11.11",
+    "idb": "^7.1.1",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.336.0",
     "next-themes": "^0.3.0",
