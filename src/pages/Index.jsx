@@ -3,13 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { openDB } from 'idb';
-
-const dbPromise = openDB('SunoSongsDB', 1, {
-  upgrade(db) {
-    db.createObjectStore('songs', { keyPath: 'id' });
-  },
-});
 
 const fetchSongs = async () => {
   const response = await fetch('https://studio-api.suno.ai/api/feed/v2?page=0');
@@ -30,26 +23,13 @@ const Index = () => {
 
   useEffect(() => {
     if (songsData) {
-      storeSongsInDB(songsData.items);
+      setFilteredSongs(songsData.items);
     }
   }, [songsData]);
 
-  const storeSongsInDB = async (songs) => {
-    const db = await dbPromise;
-    const tx = db.transaction('songs', 'readwrite');
-    const store = tx.objectStore('songs');
-    songs.forEach(song => {
-      store.put(song);
-    });
-    await tx.done;
-  };
-
-  const searchSongs = async () => {
-    const db = await dbPromise;
-    const tx = db.transaction('songs', 'readonly');
-    const store = tx.objectStore('songs');
-    const allSongs = await store.getAll();
-    const filtered = allSongs.filter(song =>
+  const searchSongs = () => {
+    if (!songsData) return;
+    const filtered = songsData.items.filter(song =>
       song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       song.artist.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -59,10 +39,10 @@ const Index = () => {
   useEffect(() => {
     if (searchTerm) {
       searchSongs();
-    } else {
-      setFilteredSongs([]);
+    } else if (songsData) {
+      setFilteredSongs(songsData.items);
     }
-  }, [searchTerm]);
+  }, [searchTerm, songsData]);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {error.message}</div>;
